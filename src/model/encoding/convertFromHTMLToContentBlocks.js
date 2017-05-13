@@ -86,6 +86,13 @@ const imgAttr = [
   'width',
 ];
 
+const iframeAttr = [
+  'className',
+  'height',
+  'width',
+  'src',
+];
+
 var lastBlock;
 
 type Block = {
@@ -415,6 +422,32 @@ function genFragment(
     );
   }
 
+  if (
+    nodeName === 'iframe' &&
+    node instanceof HTMLIframeElement &&
+    node.attributes.getNamedItem('src') &&
+    node.attributes.getNamedItem('src').value
+  ) {
+    const image: HTMLIframeElement = node;
+    const entityConfig = {};
+
+    iframeAttr.forEach((attr) => {
+      const iframeAttribute = iframe.getAttribute(attr);
+      if (iframeAttribute) {
+        entityConfig[attr] = iframeAttribute;
+      }
+    });
+    const iframeURI = new URI(entityConfig.src).toString();
+    node.textContent = iframeURI; // Output src if no decorator
+
+    // TODO: update this when we remove DraftEntity entirely
+    inEntity = DraftEntity.__create(
+      'IFRAME',
+      'IMMUTABLE',
+      entityConfig || {},
+    );
+  }
+
   var chunk = getEmptyChunk();
   var newChunk: ?Chunk = null;
 
@@ -667,3 +700,4 @@ function convertFromHTMLtoContentBlocks(
 }
 
 module.exports = convertFromHTMLtoContentBlocks;
+
